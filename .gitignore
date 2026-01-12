@@ -68,5 +68,8 @@ srccommented_comics.txt
 .claude/
 CLAUDE.md
 
+# Temporary folders
+tmpclaude-*
+
 
 .env
