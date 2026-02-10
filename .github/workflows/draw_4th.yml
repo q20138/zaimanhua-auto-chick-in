@@ -35,3 +35,40 @@ jobs:
           ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
           ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
         run: python src/draw_4th.py
+        name: Daily Watch
+
+on:
+  schedule:
+    # 北京时间 10:00 (UTC+8)，即 UTC 2:00
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90  # 支持最多5账号 (每账号~12分钟 + 缓冲)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright requests python-dotenv
+          playwright install chromium
+
+      - name: Run auto read script
+        env:
+          ZAIMANHUA_COOKIE: ${{ secrets.ZAIMANHUA_COOKIE }}
+          ZAIMANHUA_COOKIE_1: ${{ secrets.ZAIMANHUA_COOKIE_1 }}
+          ZAIMANHUA_COOKIE_2: ${{ secrets.ZAIMANHUA_COOKIE_2 }}
+          ZAIMANHUA_COOKIE_3: ${{ secrets.ZAIMANHUA_COOKIE_3 }}
+          ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
+          ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
+        run: python src/auto_read.py
+        # 强制刷新定时任务
