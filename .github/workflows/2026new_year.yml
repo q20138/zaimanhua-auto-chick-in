@@ -1,16 +1,22 @@
 name: New Year Activity
 
 on:
-  schedule:
-    # 北京时间 8:00-23:00 (UTC 0:00-15:00)，每 15 分钟触发
-    # 活动时间: 2/15-2/23 每天 10:00-24:00
-    - cron: '*/15 0-15 * * *'
   workflow_dispatch:
+  # schedule 可以留着也行，但你现在 schedule 不生效的话，这个方案不靠它
+  # schedule:
+  #   - cron: "*/15 * * * *"
+
+concurrency:
+  group: new-year-activity
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   new-year:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
 
     steps:
       - name: Checkout repository
@@ -24,10 +30,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install playwright requests python-dotenv
-          playwright install chromium
+          playwright install --with-deps chromium
 
       - name: Run new year activity
         env:
+          PYTHONUNBUFFERED: "1"
           ZAIMANHUA_COOKIE: ${{ secrets.ZAIMANHUA_COOKIE }}
           ZAIMANHUA_COOKIE_1: ${{ secrets.ZAIMANHUA_COOKIE_1 }}
           ZAIMANHUA_COOKIE_2: ${{ secrets.ZAIMANHUA_COOKIE_2 }}
@@ -35,4 +42,27 @@ jobs:
           ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
           ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
         run: python src/2026new_year.py
-  # 强制刷新定时任务
+
+      - name: Debug - activity host
+        run: |
+          echo "DNS:"
+          nslookup activity.zaimanhua.com || true
+          echo "HTTPS HEAD:"
+          curl -I -m 20 -v https://activity.zaimanhua.com/ || true
+
+      # ✅ 核心：跑完后等待 15 分钟，再触发下一次
+      - name: Loop - dispatch next run after 15 minutes
+        if: success()
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          echo "Sleeping 900s before triggering next run..."
+          sleep 900
+
+          echo "Dispatching next run..."
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $GH_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/2026new_year.yml/dispatches \
+            -d '{"ref":"main"}'
