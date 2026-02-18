@@ -35,4 +35,4 @@ jobs:
           ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
           ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
         run: python src/2026new_year.py
-        # 强制刷新定时任务
+  # 强制刷新定时任务
