@@ -2,9 +2,10 @@ name: New Year Activity
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    # 北京时间 8:00-23:00 (UTC 0:00-15:00)，每 15 分钟触发
+    # 活动时间: 2/15-2/23 每天 10:00-24:00
+    - cron: '*/15 0-15 * * *'
   workflow_dispatch:
-
 
 jobs:
   new-year:
@@ -34,11 +35,4 @@ jobs:
           ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
           ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
         run: python src/2026new_year.py
-        
-      - name: Debug - activity host
-        run: |
-          echo "DNS:"
-          nslookup activity.zaimanhua.com || true
-          echo "HTTPS HEAD:"
-          curl -I -m 20 -v https://activity.zaimanhua.com/ || true
         # 强制刷新定时任务
