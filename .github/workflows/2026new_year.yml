@@ -35,3 +35,11 @@ jobs:
           ZAIMANHUA_COOKIE_4: ${{ secrets.ZAIMANHUA_COOKIE_4 }}
           ZAIMANHUA_COOKIE_5: ${{ secrets.ZAIMANHUA_COOKIE_5 }}
         run: python src/2026new_year.py
+        
+      - name: Debug - activity host
+        run: |
+          echo "DNS:"
+          nslookup activity.zaimanhua.com || true
+          echo "HTTPS HEAD:"
+          curl -I -m 20 -v https://activity.zaimanhua.com/ || true
+        # 强制刷新定时任务
